@@ -103,7 +103,8 @@ namespace AdCampaignMVP.Controllers
             if (campaign == null) return NotFound();
 
             var roi = campaign.Budget > 0 ? ((decimal)campaign.Clicks * 10) / campaign.Budget : 0; // Example: 10 currency units per click
-            return Ok(new {
+            return Ok(new
+            {
                 campaign.Id,
                 campaign.Title,
                 campaign.Impressions,
@@ -111,6 +112,26 @@ namespace AdCampaignMVP.Controllers
                 ROI = roi
             });
         }
+        
+        [HttpGet("my")]
+        [Authorize]
+        public async Task<IActionResult> GetMine()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
+            if (isAdmin)
+            {
+                return Ok(await _context.AdCampaigns.ToListAsync());
+            }
+            else
+            {
+                return Ok(await _context.AdCampaigns
+                    .Where(c => c.CreatedByUserId == user.Id)
+                    .ToListAsync());
+            }
+        }
+
 
 
     }
