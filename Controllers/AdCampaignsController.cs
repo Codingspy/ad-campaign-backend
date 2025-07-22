@@ -69,5 +69,49 @@ namespace AdCampaignMVP.Controllers
             await _context.SaveChangesAsync();
             return Ok("Deleted");
         }
+
+        // Increase Impression
+        [HttpPost("{id}/impression")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AddImpression(int id)
+        {
+            var campaign = await _context.AdCampaigns.FindAsync(id);
+            if (campaign == null) return NotFound();
+
+            campaign.Impressions++;
+            await _context.SaveChangesAsync();
+            return Ok(campaign);
+        }
+
+        // Increase Click
+        [HttpPost("{id}/click")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AddClick(int id)
+        {
+            var campaign = await _context.AdCampaigns.FindAsync(id);
+            if (campaign == null) return NotFound();
+
+            campaign.Clicks++;
+            await _context.SaveChangesAsync();
+            return Ok(campaign);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(int id)
+        {
+            var campaign = await _context.AdCampaigns.FindAsync(id);
+            if (campaign == null) return NotFound();
+
+            var roi = campaign.Budget > 0 ? ((decimal)campaign.Clicks * 10) / campaign.Budget : 0; // Example: 10 currency units per click
+            return Ok(new {
+                campaign.Id,
+                campaign.Title,
+                campaign.Impressions,
+                campaign.Clicks,
+                ROI = roi
+            });
+        }
+
+
     }
 }
