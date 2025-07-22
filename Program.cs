@@ -21,10 +21,10 @@ builder.Services.AddControllers();
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowViteOrigin",
+    options.AddPolicy("AllowFrontendOrigin",
         builder =>
         {
-            builder.WithOrigins("http://localhost:5173")
+            builder.WithOrigins("https://ad-campaign-frontend-git-main-pvss-projects-d13e94f6.vercel.app/")
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
@@ -72,7 +72,7 @@ else
 }
 
 // Apply middlewares in proper order
-app.UseCors("AllowViteOrigin");
+app.UseCors("AllowFrontendOrigin");
 
 app.UseRouting();
 
