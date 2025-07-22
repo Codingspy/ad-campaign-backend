@@ -282,3 +282,8 @@ C:\Users\Lenovo\AdCampaignMVP\backend\obj\Debug\net8.0\AdCampai.6FA0428A.Up2Date
 C:\Users\Lenovo\AdCampaignMVP\backend\obj\Debug\net8.0\AdCampaignMVP.dll
 C:\Users\Lenovo\AdCampaignMVP\backend\obj\Debug\net8.0\refint\AdCampaignMVP.dll
 C:\Users\Lenovo\AdCampaignMVP\backend\obj\Debug\net8.0\AdCampaignMVP.pdb
+C:\Users\Lenovo\AdCampaignMVP\backend\bin\Debug\net8.0\AdCampaignMVP.deps.json
+C:\Users\Lenovo\AdCampaignMVP\backend\bin\Debug\net8.0\AdCampaignMVP.runtimeconfig.json
+C:\Users\Lenovo\AdCampaignMVP\backend\bin\Debug\net8.0\AdCampaignMVP.pdb
+C:\Users\Lenovo\AdCampaignMVP\backend\obj\Debug\net8.0\AdCampaignMVP.genruntimeconfig.cache
+C:\Users\Lenovo\AdCampaignMVP\backend\obj\Debug\net8.0\ref\AdCampaignMVP.dll

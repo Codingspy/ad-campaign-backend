@@ -9,7 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+    sqlOptions => sqlOptions.EnableRetryOnFailure()));
 
 // Add Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
@@ -40,6 +41,13 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
+
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ApplicationDbContext>();
+
+    context.Database.Migrate();
+
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
     string[] roles = { "Admin", "User" };
 
@@ -55,6 +63,7 @@ using (var scope = app.Services.CreateScope())
 
 app.UseCors("AllowAll");
 
+app.MapGet("/", () => "Hello World!");
 
 
 
