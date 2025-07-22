@@ -38,19 +38,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-var scope = app.Services.CreateScope();
-var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-string[] roles = ["Admin", "User"];
-
-foreach (var role in roles)
+using (var scope = app.Services.CreateScope())
 {
-    if (!await roleManager.RoleExistsAsync(role))
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    string[] roles = ["Admin", "User"];
+
+    foreach (var role in roles)
     {
-        await roleManager.CreateAsync(new IdentityRole(role));
+        if (!await roleManager.RoleExistsAsync(role))
+        {
+            await roleManager.CreateAsync(new IdentityRole(role));
+        }
     }
+
 }
-
-
 
 app.UseCors("AllowAll");
 
