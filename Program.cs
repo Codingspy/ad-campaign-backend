@@ -71,10 +71,11 @@ else
     app.UseExceptionHandler("/error");
 }
 
-// Apply middlewares in proper order
-app.UseCors("AllowFrontendOrigin");
+
+
 
 app.UseRouting();
+app.UseCors("AllowFrontendOrigin");
 
 app.UseAuthentication();
 app.UseAuthorization();
