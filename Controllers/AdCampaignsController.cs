@@ -44,11 +44,24 @@ namespace AdCampaignMVP.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> Update(int id, AdCampaign updated)
         {
+
+             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
             var existing = await _context.AdCampaigns.FindAsync(id);
             if (existing == null) return NotFound();
+
+            if (!isAdmin && existing.CreatedByUserId != user.Id)
+            {
+                return Forbid("You do not have permission to update this campaign.");
+            }
 
             existing.Title = updated.Title;
             existing.Description = updated.Description;
@@ -59,11 +72,23 @@ namespace AdCampaignMVP.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize]
         public async Task<IActionResult> Delete(int id)
         {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
+            bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
+
             var existing = await _context.AdCampaigns.FindAsync(id);
             if (existing == null) return NotFound();
+
+            if (!isAdmin && existing.CreatedByUserId != user.Id)
+            {
+                return Forbid("You do not have permission to update this campaign.");
+            }
 
             _context.AdCampaigns.Remove(existing);
             await _context.SaveChangesAsync();
@@ -118,6 +143,10 @@ namespace AdCampaignMVP.Controllers
         public async Task<IActionResult> GetMine()
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
             if (isAdmin)
