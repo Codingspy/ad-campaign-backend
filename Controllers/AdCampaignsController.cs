@@ -31,6 +31,10 @@ namespace AdCampaignMVP.Controllers
         public async Task<IActionResult> Create(AdCampaign model)
         {
             var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return Unauthorized("User not found.");
+            }
             model.CreatedByUserId = user.Id;
 
             _context.AdCampaigns.Add(model);
