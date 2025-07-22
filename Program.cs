@@ -52,7 +52,7 @@ foreach (var role in roles)
 
 
 
-app.UseCors("AllowViteOrigin");
+app.UseCors("AllowAll");
 
 
 
