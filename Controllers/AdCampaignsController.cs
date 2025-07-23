@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AdCampaignMVP.Data;
 using AdCampaignMVP.Models;
+using AdCampaignMVP.Services; // Make sure this is there
 
 namespace AdCampaignMVP.Controllers
 {
@@ -14,11 +15,16 @@ namespace AdCampaignMVP.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public AdCampaignsController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
+        public AdCampaignsController(
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            IEmailSender emailSender)
         {
             _context = context;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         [HttpGet]
@@ -28,31 +34,36 @@ namespace AdCampaignMVP.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(AdCampaign model)
+        public async Task<IActionResult> Create(AdCampaign campaign)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized("User not found.");
-            }
-            model.CreatedByUserId = user.Id;
+            if (user == null) return Unauthorized("User not found.");
 
-            _context.AdCampaigns.Add(model);
+            campaign.CreatedByUserId = user.Id;
+            _context.AdCampaigns.Add(campaign);
             await _context.SaveChangesAsync();
 
-            return Ok(model);
+            // Send email to user
+            await _emailSender.SendEmailAsync(
+                user.Email,
+                "Campaign Created",
+                $"Your campaign \"{campaign.Title}\" has been created with a budget of ₹{campaign.Budget}.");
+
+            // Send copy to Admin
+            await _emailSender.SendEmailAsync(
+                "admin@example.com",
+                "New Campaign Created",
+                $"User {user.Email} created campaign \"{campaign.Title}\".");
+
+            return Ok(campaign);
         }
 
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> Update(int id, AdCampaign updated)
         {
-
-             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized("User not found.");
-            }
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null) return Unauthorized("User not found.");
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
             var existing = await _context.AdCampaigns.FindAsync(id);
@@ -76,10 +87,7 @@ namespace AdCampaignMVP.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized("User not found.");
-            }
+            if (user == null) return Unauthorized("User not found.");
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
             var existing = await _context.AdCampaigns.FindAsync(id);
@@ -87,7 +95,7 @@ namespace AdCampaignMVP.Controllers
 
             if (!isAdmin && existing.CreatedByUserId != user.Id)
             {
-                return Forbid("You do not have permission to update this campaign.");
+                return Forbid("You do not have permission to delete this campaign.");
             }
 
             _context.AdCampaigns.Remove(existing);
@@ -95,7 +103,6 @@ namespace AdCampaignMVP.Controllers
             return Ok("Deleted");
         }
 
-        // Increase Impression
         [HttpPost("{id}/impression")]
         [AllowAnonymous]
         public async Task<IActionResult> AddImpression(int id)
@@ -108,7 +115,6 @@ namespace AdCampaignMVP.Controllers
             return Ok(campaign);
         }
 
-        // Increase Click
         [HttpPost("{id}/click")]
         [AllowAnonymous]
         public async Task<IActionResult> AddClick(int id)
@@ -127,7 +133,7 @@ namespace AdCampaignMVP.Controllers
             var campaign = await _context.AdCampaigns.FindAsync(id);
             if (campaign == null) return NotFound();
 
-            var roi = campaign.Budget > 0 ? ((decimal)campaign.Clicks * 10) / campaign.Budget : 0; // Example: 10 currency units per click
+            var roi = campaign.Budget > 0 ? ((decimal)campaign.Clicks * 10) / campaign.Budget : 0;
             return Ok(new
             {
                 campaign.Id,
@@ -137,16 +143,13 @@ namespace AdCampaignMVP.Controllers
                 ROI = roi
             });
         }
-        
+
         [HttpGet("my")]
         [Authorize]
         public async Task<IActionResult> GetMine()
         {
             var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-            {
-                return Unauthorized("User not found.");
-            }
+            if (user == null) return Unauthorized("User not found.");
             bool isAdmin = await _userManager.IsInRoleAsync(user, "Admin");
 
             if (isAdmin)
@@ -160,8 +163,5 @@ namespace AdCampaignMVP.Controllers
                     .ToListAsync());
             }
         }
-
-
-
     }
 }

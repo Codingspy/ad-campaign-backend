@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using AdCampaignMVP.Data;
 using AdCampaignMVP.Models;
+using AdCampaignMVP.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,11 +25,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontendOrigin",
         builder =>
         {
-            builder.WithOrigins("https://ad-campaign-frontend-git-main-pvss-projects-d13e94f6.vercel.app/")
+            builder.WithOrigins("https://ad-campaign-frontend-git-main-pvss-projects-d13e94f6.vercel.app")
                    .AllowAnyHeader()
                    .AllowAnyMethod();
         });
 });
+
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
 
 var app = builder.Build();
 
