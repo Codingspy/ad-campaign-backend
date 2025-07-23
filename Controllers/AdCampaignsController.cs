@@ -44,10 +44,13 @@ namespace AdCampaignMVP.Controllers
             await _context.SaveChangesAsync();
 
             // Send email to user
-            await _emailSender.SendEmailAsync(
-                user.Email,
-                "Campaign Created",
-                $"Your campaign \"{campaign.Title}\" has been created with a budget of ₹{campaign.Budget}.");
+            if (!string.IsNullOrWhiteSpace(user.Email))
+            {
+                await _emailSender.SendEmailAsync(
+                    user.Email,
+                    "Campaign Created",
+                    $"Your campaign \"{campaign.Title}\" has been created with a budget of ₹{campaign.Budget}.");
+            }
 
             // Send copy to Admin
             await _emailSender.SendEmailAsync(
